@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>PCCheck Viewer</title>
+  <style>
+    body{font-family:sans-serif; padding:20px}
+    pre{white-space:pre-wrap; background:#f4f4f4; padding:10px; border-radius:6px}
+  </style>
+</head>
+<body>
+  <h1>PCCheck Results</h1>
+  <div id="content">Loading...</div>
+
+  <script>
+    async function loadResults() {
+      try {
+        const r = await fetch('/Results.txt');
+        const txt = await r.text();
+        document.getElementById('content').innerHTML = '<pre>' + txt.replace(/</g,'&lt;') + '</pre>';
+      } catch(e) {
+        document.getElementById('content').innerText = 'Results.txt not found or server not running.';
+      }
+    }
+    loadResults();
+  </script>
+</body>
+</html>
