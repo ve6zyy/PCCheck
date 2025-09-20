@@ -2,6 +2,7 @@
 # Bootstrap script - must be run as Administrator
 [CmdletBinding()]
 param()
+
 function Test-IsAdmin {
     $current = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
     return $current.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -12,10 +13,10 @@ if (-not (Test-IsAdmin)) {
     exit 1
 }
 
-# Replace with your GitHub username/org
-$rawBase = "https://raw.githubusercontent.com/YOUR_GITHUB_USER/PCCheckv2/main"
+# raw base pointing to your repo (ve6zyy/PCCheck)
+$rawBase = "https://raw.githubusercontent.com/ve6zyy/PCCheck/main"
 
-# Files to fetch (preserve folder structure)
+# Files to fetch (flat layout; cfg stays in cfg/)
 $files = @(
     "Menu.ps1",
     "PCCheck.ps1",
@@ -23,12 +24,12 @@ $files = @(
     "Viewer.html",
     "README.md",
     "cfg/cfg.json",
-    "modules/MFT.ps1",
-    "modules/QuickMFT.ps1",
-    "modules/Registry.ps1",
-    "modules/SystemLogs.ps1",
-    "modules/ProcDump.ps1",
-    "modules/Packers.ps1"
+    "MFT.ps1",
+    "QuickMFT.ps1",
+    "Registry.ps1",
+    "SystemLogs.ps1",
+    "ProcDump.ps1",
+    "Packers.ps1"
 )
 
 $destination = "C:\Temp\Scripts"
