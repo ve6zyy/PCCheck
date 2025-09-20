@@ -1,9 +1,9 @@
-# modules\Packers.ps1 - basic signature / packer detection skeleton
+# Packers.ps1 - basic signature / packer detection skeleton (flat layout)
 $dumpRoot = "C:\Temp\Dump"
 $packDir = Join-Path $dumpRoot "Packers"
 New-Item -Path $packDir -ItemType Directory -Force | Out-Null
 
-# scan common exe paths for suspicious file properties (simple heuristics)
+# scan common exe paths for simple heuristics
 $paths = @("$env:ProgramFiles\*","$env:ProgramFiles(x86)\*","$env:UserProfile\Downloads\*")
 $results = @()
 foreach ($p in $paths) {
@@ -12,7 +12,6 @@ foreach ($p in $paths) {
             $fi = $_
             $ver = $null
             try { $ver = (Get-ItemProperty -Path $fi.FullName -Name VersionInfo -ErrorAction SilentlyContinue).VersionInfo } catch {}
-            $entropy = [Math]::Round((Get-FileHash -Algorithm SHA256 -Path $fi.FullName -ErrorAction SilentlyContinue).Hash.Length,2)
             $results += [PSCustomObject]@{
                 File = $fi.FullName
                 Length = $fi.Length
