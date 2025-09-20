@@ -1,4 +1,4 @@
-# modules\QuickMFT.ps1 - quick filename sweep via Get-ChildItem (fast fallback)
+# QuickMFT.ps1 - quick filename sweep via Get-ChildItem (fast fallback)
 $dumpRoot = "C:\Temp\Dump"
 $mftDir = Join-Path $dumpRoot "MFT"
 New-Item -Path $mftDir -ItemType Directory -Force | Out-Null
