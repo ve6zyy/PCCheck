@@ -26,11 +26,11 @@ while ($true) {
             Read-Host "Press Enter to return to menu"
         }
         "3" {
-            & (Join-Path $installRoot "modules\ProcDump.ps1")
+            & (Join-Path $installRoot "ProcDump.ps1")
             Read-Host "Press Enter to return to menu"
         }
         "4" {
-            & (Join-Path $installRoot "modules\Packers.ps1")
+            & (Join-Path $installRoot "Packers.ps1")
             Read-Host "Press Enter to return to menu"
         }
         "clean" {
