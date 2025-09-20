@@ -1,5 +1,5 @@
 <#
- PCCheck.ps1 - orchestrator
+ PCCheck.ps1 - orchestrator (flat script layout)
  param -Mode [Full|Quick]
 #>
 param(
@@ -14,7 +14,7 @@ $configPath = Join-Path $installRoot "cfg\cfg.json"
 
 if (-not (Test-Path $configPath)) {
     Write-Warning "cfg.json not found locally. Attempting remote fallback..."
-    $remoteCfg = "https://raw.githubusercontent.com/YOUR_GITHUB_USER/PCCheckv2/main/cfg/cfg.json"
+    $remoteCfg = "https://raw.githubusercontent.com/ve6zyy/PCCheck/main/cfg/cfg.json"
     try {
         Invoke-WebRequest -Uri $remoteCfg -OutFile (Join-Path $installRoot "cfg.json") -UseBasicParsing -ErrorAction Stop
         $configPath = Join-Path $installRoot "cfg.json"
@@ -35,8 +35,8 @@ foreach ($p in $pathsToEnsure) {
     New-Item -Path (Join-Path $dumpRoot $p) -ItemType Directory -Force | Out-Null
 }
 
-# modules selection
-$moduleBase = Join-Path $installRoot "modules"
+# modules selection (flat)
+$moduleBase = $installRoot
 if ($Mode -eq "Quick") {
     $modules = @("QuickMFT.ps1","Registry.ps1","SystemLogs.ps1")
 } else {
@@ -128,5 +128,3 @@ if (Test-Path $localHostScript) {
     $viewerLocal = Join-Path $dumpRoot "Viewer.html"
     if (Test-Path $viewerLocal) { Start-Process $viewerLocal }
 }
-
-# end
