@@ -62,7 +62,7 @@ foreach ($m in $modules) {
 $timeoutSeconds = 20 * 60
 $sw = [Diagnostics.Stopwatch]::StartNew()
 while ($jobs.Count -gt 0 -and $sw.Elapsed.TotalSeconds -lt $timeoutSeconds) {
-    foreach ($j in $jobs.ToArray()) {
+    foreach ($j in @($jobs)) {   # FIXED: no .ToArray(), just wrap in @()
         $j | Receive-Job -ErrorAction SilentlyContinue | Out-Null
         if ($j.State -in @('Completed','Failed','Stopped')) {
             Remove-Job -Job $j -Force -ErrorAction SilentlyContinue
