@@ -1,16 +1,16 @@
-# modules\MFT.ps1
+# MFT.ps1 - attempts MFTECmd if present, otherwise is a placeholder aggregator
 $dumpRoot = "C:\Temp\Dump"
 $mftOutDir = Join-Path $dumpRoot "MFT"
 New-Item -Path $mftOutDir -ItemType Directory -Force | Out-Null
 New-Item -Path (Join-Path $mftOutDir "Raw") -ItemType Directory -Force | Out-Null
 
-# If MFTECmd.exe is available in the same folder as scripts, use it
-$mftePathCandidates = @(
+# Look for MFTECmd in a few candidate locations
+$mfteCandidates = @(
     "C:\Temp\Scripts\tools\MFTECmd.exe",
     "C:\Temp\Scripts\MFTECmd.exe",
     "C:\tools\MFTECmd.exe"
 )
-$mfte = $mftePathCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+$mfte = $mfteCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 
 if ($mfte) {
     $drives = Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Root
