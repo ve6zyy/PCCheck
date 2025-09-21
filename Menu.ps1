@@ -1,51 +1,62 @@
-# Menu.ps1
-$ErrorActionPreference = "Stop"
-$installRoot = "C:\Temp\Scripts"
+# Menu.ps1 - Main entry point
+$installDir = "C:\Temp\Scripts"
+$toolsDir   = Join-Path $installDir "tools"
+$dumpDir    = "C:\Temp\Dump"
+$rawBase    = "https://raw.githubusercontent.com/ve6zyy/PCCheck/main"
 
-function ShowMenu {
+New-Item -Path $dumpDir -ItemType Directory -Force | Out-Null
+New-Item -Path $toolsDir -ItemType Directory -Force | Out-Null
+
+function Download-Script($name) {
+    $url = "$rawBase/$name"
+    $out = Join-Path $installDir $name
+    $outDir = Split-Path $out -Parent
+    if (-not (Test-Path $outDir)) { New-Item -Path $outDir -ItemType Directory -Force | Out-Null }
+    Invoke-WebRequest -Uri $url -OutFile $out -UseBasicParsing
+}
+
+# Scripts to fetch
+$scripts = @(
+    "PCCheck.ps1","Localhost.ps1","Viewer.html",
+    "MFT.ps1","QuickMFT.ps1","Registry.ps1","SystemLogs.ps1","ProcDump.ps1","Packers.ps1",
+    "cfg/cfg.json"
+)
+
+foreach ($s in $scripts) { Download-Script $s }
+
+# Tools to fetch
+$tools = @(
+    @{Name="MFTECmd"; Url="https://github.com/EricZimmerman/MFTECmd/releases/latest/download/MFTECmd.zip"},
+    @{Name="AmcacheParser"; Url="https://github.com/EricZimmerman/AmcacheParser/releases/latest/download/AmcacheParser.zip"},
+    @{Name="SBECmd"; Url="https://github.com/EricZimmerman/SBECmd/releases/latest/download/SBECmd.zip"},
+    @{Name="Strings"; Url="https://download.sysinternals.com/files/Strings.zip"}
+)
+
+foreach ($t in $tools) {
+    $zip = Join-Path $toolsDir ($t.Name + ".zip")
+    Invoke-WebRequest -Uri $t.Url -OutFile $zip -UseBasicParsing
+    Expand-Archive -Path $zip -DestinationPath $toolsDir -Force
+    Remove-Item $zip -Force
+}
+
+# Menu
+function Show-Menu {
     Clear-Host
-    Write-Host "PCCheck v2 - Menu`n"
-    Write-Host " 1) Full Check"
-    Write-Host " 2) Quick Check"
-    Write-Host " 3) Process & Strings Check"
-    Write-Host " 4) Advanced: Packers / Signatures"
-    Write-Host " clean) Clean dump folder"
-    Write-Host " 0) Exit"
-    return Read-Host "Choose"
+    Write-Host "=== PCCheck Menu ===" -ForegroundColor Cyan
+    Write-Host "1. Full Scan"
+    Write-Host "2. Quick Scan"
+    Write-Host "3. Open Results Viewer"
+    Write-Host "4. Exit"
+    Write-Host ""
+    $choice = Read-Host "Choose option"
+    switch ($choice) {
+        "1" { & (Join-Path $installDir "PCCheck.ps1") -Mode Full; Pause }
+        "2" { & (Join-Path $installDir "PCCheck.ps1") -Mode Quick; Pause }
+        "3" { Start-Process "http://localhost:8080/Viewer.html"; Pause }
+        "4" { exit }
+        default { Write-Host "Invalid choice"; Pause }
+    }
+    Show-Menu
 }
 
-while ($true) {
-    $choice = ShowMenu
-    switch ($choice) {
-        "1" {
-            & (Join-Path $installRoot "PCCheck.ps1") -Mode Full
-            Read-Host "Press Enter to return to menu"
-        }
-        "2" {
-            & (Join-Path $installRoot "PCCheck.ps1") -Mode Quick
-            Read-Host "Press Enter to return to menu"
-        }
-        "3" {
-            & (Join-Path $installRoot "ProcDump.ps1")
-            Read-Host "Press Enter to return to menu"
-        }
-        "4" {
-            & (Join-Path $installRoot "Packers.ps1")
-            Read-Host "Press Enter to return to menu"
-        }
-        "clean" {
-            $dump = "C:\Temp\Dump"
-            if (Test-Path $dump) {
-                Remove-Item -Path (Join-Path $dump "*") -Recurse -Force -ErrorAction SilentlyContinue
-                New-Item -Path $dump -ItemType Directory -Force | Out-Null
-            }
-            Write-Host "Dump cleaned."
-            Start-Sleep -Seconds 1
-        }
-        "0" { break }
-        default {
-            Write-Host "Invalid choice"
-            Start-Sleep -Seconds 1
-        }
-    }
-}
+Show-Menu
