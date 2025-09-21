@@ -1,23 +1,23 @@
-# ProcDump.ps1 - process listing and strings extraction skeleton
+# ProcDump.ps1 - process listing and strings extraction (if strings.exe present)
 $dumpRoot = "C:\Temp\Dump"
-$procDir = Join-Path $dumpRoot "Processes"
-New-Item -Path $procDir -ItemType Directory -Force | Out-Null
-New-Item -Path (Join-Path $procDir "Raw") -ItemType Directory -Force | Out-Null
+$outDir = Join-Path $dumpRoot "Processes"
+New-Item -Path $outDir -ItemType Directory -Force | Out-Null
+New-Item -Path (Join-Path $outDir "Raw") -ItemType Directory -Force | Out-Null
 
-# Basic process list
 try {
-    Get-Process | Select-Object Id, ProcessName, @{Name='StartTime';Expression={($_.StartTime -as [string]) -replace '\.',''}} -ErrorAction SilentlyContinue |
-        Export-Csv -Path (Join-Path $procDir "Raw\processes.csv") -NoTypeInformation -Encoding UTF8
+    Get-Process | Select-Object Id,ProcessName,@{Name="StartTime";Expression={($_.StartTime -as [string])}} | Export-Csv -Path (Join-Path $outDir "Raw\processes.csv") -NoTypeInformation -Encoding UTF8
 } catch {}
 
-# Attempt to run strings extraction if strings.exe or strings2.exe is included in tools
-$stringsCandidates = @("C:\Temp\Scripts\tools\strings2.exe","C:\Temp\Scripts\tools\strings.exe")
-$stringsExe = $stringsCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-if ($stringsExe) {
+$tools = "C:\Temp\Scripts\tools"
+$strings = Get-ChildItem -Path $tools -Filter "strings.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+if (-not $strings) { $strings = Get-ChildItem -Path $tools -Filter "strings64.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 }
+
+if ($strings) {
+    Write-Host "Strings found; extracting top processes..."
     $pids = Get-Process | Select-Object -First 5 -ExpandProperty Id -ErrorAction SilentlyContinue
     foreach ($pid in $pids) {
-        try {
-            & $stringsExe -n 5 -pid $pid | Out-File -FilePath (Join-Path $procDir ("Raw\p_" + $pid + ".txt")) -Encoding UTF8
-        } catch {}
+        try { & $strings.FullName -n 8 -pid $pid | Out-File -FilePath (Join-Path $outDir ("Raw\p_$pid.txt")) -Encoding UTF8 } catch {}
     }
+} else {
+    Write-Warning "strings.exe not found; skipping memory string extraction."
 }
