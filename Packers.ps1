@@ -1,10 +1,9 @@
-# Packers.ps1 - basic signature / packer detection skeleton (flat layout)
+# Packers.ps1 - simple exe snapshot and heuristics
 $dumpRoot = "C:\Temp\Dump"
-$packDir = Join-Path $dumpRoot "Packers"
-New-Item -Path $packDir -ItemType Directory -Force | Out-Null
+$outDir = Join-Path $dumpRoot "Packers"
+New-Item -Path $outDir -ItemType Directory -Force | Out-Null
 
-# scan common exe paths for simple heuristics
-$paths = @("$env:ProgramFiles\*","$env:ProgramFiles(x86)\*","$env:UserProfile\Downloads\*")
+$paths = @("$env:ProgramFiles","$env:ProgramFiles(x86)","$env:UserProfile\Downloads")
 $results = @()
 foreach ($p in $paths) {
     try {
@@ -12,12 +11,8 @@ foreach ($p in $paths) {
             $fi = $_
             $ver = $null
             try { $ver = (Get-ItemProperty -Path $fi.FullName -Name VersionInfo -ErrorAction SilentlyContinue).VersionInfo } catch {}
-            $results += [PSCustomObject]@{
-                File = $fi.FullName
-                Length = $fi.Length
-                Version = ($ver.FileVersion -as [string])
-            }
+            $results += [PSCustomObject]@{ File=$fi.FullName; Length=$fi.Length; Version=($ver.FileVersion -as [string]) }
         }
     } catch {}
 }
-$results | Export-Csv -Path (Join-Path $packDir "ExeSnapshot.csv") -NoTypeInformation -Encoding UTF8
+$results | Export-Csv -Path (Join-Path $outDir "ExeSnapshot.csv") -NoTypeInformation -Encoding UTF8
