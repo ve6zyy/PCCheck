@@ -1,12 +1,6 @@
-# QuickMFT.ps1 - fast filename sweep fallback
-$dumpRoot = "C:\Temp\Dump"
-$outDir = Join-Path $dumpRoot "MFT"
-New-Item -Path $outDir -ItemType Directory -Force | Out-Null
-
-$keywords = @("aimbot","triggerbot","cheat","hack","trainer","usbdeview","ro9an","abby","hitbox","clumsy","astra","hydro","leet","skript")
-$paths = @("$env:ProgramFiles","$env:ProgramFiles(x86)","$env:UserProfile\Downloads","$env:UserProfile\Desktop","$env:LocalAppData\Temp")
-$out = @()
-foreach ($p in $paths) {
-    try { Get-ChildItem -Path $p -Recurse -ErrorAction SilentlyContinue | ForEach-Object { foreach ($k in $keywords) { if ($_.Name -match [regex]::Escape($k)) { $out += $_.FullName } } } } catch {}
+$dump = "C:\Temp\Dump\MFT"; New-Item $dump -ItemType Directory -Force | Out-Null
+$tool = "C:\Temp\Scripts\tools\MFTECmd.exe"
+if (Test-Path $tool) {
+    $drives = Get-PSDrive -PSProvider FileSystem | Select-Object -Expand Root
+    foreach ($d in $drives) { & $tool -f "${d}`$MFT" --csv $dump --fl -q }
 }
-$out | Sort-Object -Unique | Out-File -FilePath (Join-Path $outDir "QuickScan.txt") -Encoding UTF8
