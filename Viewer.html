@@ -1,28 +1,14 @@
 <!doctype html>
 <html>
-<head>
-  <meta charset="utf-8"/>
-  <title>PCCheck Viewer</title>
-  <style>
-    body{font-family:sans-serif; padding:20px}
-    pre{white-space:pre-wrap; background:#f4f4f4; padding:10px; border-radius:6px}
-  </style>
+<head><meta charset="utf-8"><title>PCCheck Viewer</title>
+<style>body{font-family:Arial;padding:18px}pre{white-space:pre-wrap;background:#f7f7f7;padding:10px;border-radius:6px}</style>
 </head>
 <body>
-  <h1>PCCheck Results</h1>
-  <div id="content">Loading...</div>
-
-  <script>
-    async function loadResults() {
-      try {
-        const r = await fetch('/Results.txt');
-        const txt = await r.text();
-        document.getElementById('content').innerHTML = '<pre>' + txt.replace(/</g,'&lt;') + '</pre>';
-      } catch(e) {
-        document.getElementById('content').innerText = 'Results.txt not found or server not running.';
-      }
-    }
-    loadResults();
-  </script>
+<h1>PCCheck Results</h1>
+<div id="out">Loading...</div>
+<script>
+async function load(){try{let r=await fetch('/Results.txt'); if(!r.ok) {document.getElementById('out').innerText='Results not ready'; return;} let t=await r.text(); document.getElementById('out').innerHTML='<pre>'+t.replace(/</g,'&lt;')+'</pre>';}catch(e){document.getElementById('out').innerText='Viewer not available';}}
+load();
+</script>
 </body>
 </html>
