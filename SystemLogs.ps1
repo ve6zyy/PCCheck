@@ -1,18 +1,12 @@
-# SystemLogs.ps1 - basic event log exports
+# SystemLogs.ps1 - export event logs
 $dumpRoot = "C:\Temp\Dump"
-$eventsDir = Join-Path $dumpRoot "Events"
-New-Item -Path $eventsDir -ItemType Directory -Force | Out-Null
+$outDir = Join-Path $dumpRoot "Events"
+New-Item -Path $outDir -ItemType Directory -Force | Out-Null
 
-# Export Security, System, Application recent events (small sample each)
-$categories = @("System","Application","Security")
-foreach ($c in $categories) {
-    try {
-        $out = Join-Path $eventsDir ("Events_" + $c + ".csv")
-        Get-WinEvent -LogName $c -MaxEvents 200 | Select-Object TimeCreated,Id,LevelDisplayName,ProviderName,Message | Export-Csv -Path $out -NoTypeInformation -Encoding UTF8
-    } catch {}
+$logs = @("System","Application","Security")
+foreach ($l in $logs) {
+    try { Get-WinEvent -LogName $l -MaxEvents 500 | Select-Object TimeCreated,Id,LevelDisplayName,ProviderName,Message | Export-Csv -Path (Join-Path $outDir ("Events_" + $l + ".csv")) -NoTypeInformation -Encoding UTF8 } catch { Write-Warning "Failed export $l: $_" }
 }
 
-# Example: export Defender operational log if present
-try {
-    Get-WinEvent -LogName "Microsoft-Windows-Windows Defender/Operational" -MaxEvents 1000 | Select-Object TimeCreated,Id,LevelDisplayName,Message | Export-Csv -Path (Join-Path $eventsDir "Defender.csv") -NoTypeInformation -Encoding UTF8
-} catch {}
+# Defender operational log if present
+try { Get-WinEvent -LogName "Microsoft-Windows-Windows Defender/Operational" -MaxEvents 1000 | Select-Object TimeCreated,Id,Message | Export-Csv -Path (Join-Path $outDir "Defender.csv") -NoTypeInformation -Encoding UTF8 } catch {}
