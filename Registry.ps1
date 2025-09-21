@@ -1,27 +1,25 @@
-# Registry.ps1 - AMCache & Shellbags skeleton (flat layout)
+# Registry.ps1 - Amcache & Shellbags via AmcacheParser & SBECmd (if available)
 $dumpRoot = "C:\Temp\Dump"
-$amacDir = Join-Path $dumpRoot "AMCache"
-New-Item -Path $amacDir -ItemType Directory -Force | Out-Null
+$outDir = Join-Path $dumpRoot "AMCache"
+New-Item -Path $outDir -ItemType Directory -Force | Out-Null
 
-# If external AMCacheParser exists in tools folder, run it
-$amcacheParser = "C:\Temp\Scripts\tools\AMCacheParser.exe"
-if (Test-Path $amcacheParser) {
-    try {
-        & $amcacheParser -f "C:\Windows\AppCompat\Programs\Amcache.hve" --csv $amacDir 2>$null
-    } catch {}
-}
+$tools = "C:\Temp\Scripts\tools"
+$am = Get-ChildItem -Path $tools -Filter "AmcacheParser.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+$sbe = Get-ChildItem -Path $tools -Filter "SBECmd.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
 
-# Shellbags export (if SBECmd or other tool provided)
-$sbe = "C:\Temp\Scripts\tools\SBECmd.exe"
-if (Test-Path $sbe) {
-    try { & $sbe -d "$env:LocalAppData\Microsoft\Windows" --csv $dumpRoot } catch {}
-}
+if ($am) {
+    Write-Host "AmcacheParser found; extracting Amcache..."
+    try { & $am.FullName -f "C:\Windows\AppCompat\Programs\Amcache.hve" --csv $outDir 2>$null } catch { Write-Warning "AmcacheParser failed: $_" }
+} else { Write-Warning "AmcacheParser not found; skipping Amcache parsing." }
 
-# Basic registry-ish information export using PowerShell (fallback)
+if ($sbe) {
+    Write-Host "SBECmd found; exporting ShellBags..."
+    try { & $sbe.FullName -d "$env:LocalAppData\Microsoft\Windows" --csv $outDir 2>$null } catch { Write-Warning "SBECmd failed: $_" }
+} else { Write-Warning "SBECmd not found; skipping ShellBags." }
+
+# Basic fallback: list installed programs
 try {
-    $recent = Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall" -ErrorAction SilentlyContinue |
-        ForEach-Object {
-            [PSCustomObject]@{ Key = $_.PSChildName; DisplayName = (Get-ItemProperty $_.PSPath -ErrorAction SilentlyContinue).DisplayName }
-        }
-    $recent | Export-Csv -Path (Join-Path $amacDir "InstalledPrograms.csv") -NoTypeInformation -Encoding UTF8
+    Get-ChildItem "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall" -ErrorAction SilentlyContinue |
+        ForEach-Object { [PSCustomObject]@{Key=$_.PSChildName; DisplayName=(Get-ItemProperty $_.PSPath -ErrorAction SilentlyContinue).DisplayName } } |
+        Export-Csv -Path (Join-Path $outDir "InstalledPrograms.csv") -NoTypeInformation -Encoding UTF8
 } catch {}
