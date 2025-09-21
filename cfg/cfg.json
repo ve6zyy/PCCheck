@@ -1,18 +1,7 @@
 {
-  "Astra": "astra",
-  "Hydro": "hydro",
-  "Leet": "leet",
-  "Skript": "skript",
-  "fsSkript": 1234567,
-  "fsLeet": 2345678,
-  "fsAstra": 3456789,
-  "fsHydro": 4567890,
-  "fsRo9an": 5678901,
-  "fsHitbox": 6789012,
-  "fsAbby": 7890123,
+  "Keywords": ["aimbot","triggerbot","usbdeview","ro9an","abby","hitbox","clumsy","1337","skript","astra","leet","hydro"],
   "FilesizeH": 50000000,
   "FilesizeL": 2000000,
   "shaHashs": [],
-  "hashWordMap": {},
-  "Keywords": ["aimbot","triggerbot","usbdeview","ro9an","abby","hitbox","clumsy","1337","skript","astra","leet","hydro"]
+  "hashWordMap": {}
 }
